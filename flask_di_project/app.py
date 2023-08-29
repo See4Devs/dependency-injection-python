@@ -1,5 +1,5 @@
 from flask import Flask, jsonify
-from flask_injector import FlaskInjector, inject
+from flask_injector import FlaskInjector, inject, singleton
 
 app = Flask(__name__)
 
@@ -25,6 +25,12 @@ class DataService:
 def index(data_service: DataService):
     return jsonify(data_service.fetch_data())
 
+# Dependency configurations
+def configure(binder):
+    binder.bind(Database, to=Database(), scope=singleton)
+    binder.bind(Logger, to=Logger(), scope=singleton)
+    binder.bind(DataService, to=DataService(Database(), Logger()), scope=singleton)
+
 if __name__ == '__main__':
-    FlaskInjector(app=app)
+    FlaskInjector(app=app, modules=[configure])
     app.run(debug=True)
